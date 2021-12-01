@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ModMetaData>
+	<name>Extra Stats</name>
+	<author>Princess of Evil</author>
+	<supportedVersions>
+		<li>1.3</li>
+	</supportedVersions>
+	<packageId>princess.ExtraCompStats</packageId>
+	<description>
+This mod makes some stats that vanilla hides for some reason show in the Info menu.
+	</description>
+	<modDependencies>
+	</modDependencies>
+	<loadBefore></loadBefore>
+	<loadAfter></loadAfter>
+</ModMetaData>

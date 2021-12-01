@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<princess.ExtraStats.transmitsPower>transmits power</princess.ExtraStats.transmitsPower>
+	<princess.ExtraStats.transmitsPower.desc>Whether this transmits power - i.e. if it's a wire, battery or a generator.</princess.ExtraStats.transmitsPower.desc>
+
+	<princess.ExtraStats.shortCircuitInRain>short circuits in rain</princess.ExtraStats.shortCircuitInRain>
+	<princess.ExtraStats.shortCircuitInRain.desc>Whether this can short circuit if left out in the rain.</princess.ExtraStats.shortCircuitInRain.desc>
+
+
+	<princess.ExtraStats.basePowerConsumption>nominal power production</princess.ExtraStats.basePowerConsumption>
+	<princess.ExtraStats.basePowerConsumption.desc>
+How much power this produces.
+Do note that both vanilla and modded buildings have a habit of misreporting their power production values, so take it with a grain of salt.
+	</princess.ExtraStats.basePowerConsumption.desc>
+
+	<princess.ExtraStats.solarPowerOutput>nominal power production (solar)</princess.ExtraStats.solarPowerOutput>
+	<princess.ExtraStats.solarPowerOutput.desc>
+How much power this solar panel produces.
+Do note that both vanilla and modded buildings have a habit of misreporting their power production values, so take it with a grain of salt.
+	</princess.ExtraStats.solarPowerOutput.desc>
+
+	<princess.ExtraStats.windPowerOutput>nominal power production (wind)</princess.ExtraStats.windPowerOutput>
+	<princess.ExtraStats.windPowerOutput.desc>
+How much power this solar panel produces.
+Do note that both vanilla and modded buildings have a habit of misreporting their power production values, so take it with a grain of salt.
+	</princess.ExtraStats.windPowerOutput.desc>
+
+
+	<princess.ExtraStats.storedEnergyMax>stored energy maximum</princess.ExtraStats.storedEnergyMax>
+	<princess.ExtraStats.storedEnergyMax.desc>How much power this battery can store.</princess.ExtraStats.storedEnergyMax.desc>
+
+	<princess.ExtraStats.efficiency>battery efficiency</princess.ExtraStats.efficiency>
+	<princess.ExtraStats.efficiency.desc>How much power this battery gives back when discharged.</princess.ExtraStats.efficiency.desc>
+</LanguageData>

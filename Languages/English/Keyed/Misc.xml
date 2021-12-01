@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<princess.ExtraStats.breakdownable>can break down</princess.ExtraStats.breakdownable>
+	<princess.ExtraStats.breakdownable.desc>Whether this can break down randomly.</princess.ExtraStats.breakdownable.desc>
+
+	<princess.ExtraStats.showQuality>Change quality...</princess.ExtraStats.showQuality>
+</LanguageData>
