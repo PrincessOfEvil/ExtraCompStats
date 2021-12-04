@@ -40,7 +40,10 @@ namespace ExtraStats
             var statRepUtil_StatsToDraw_anon_transpiler = typeof(extraStats_StatsReportUtility_DrawStatsReport_anon_Patch).GetMethod("Transpiler", AccessTools.all);
             harmony.Patch(statRepUtil_StatsToDraw_anon_original, transpiler: new HarmonyMethod(statRepUtil_StatsToDraw_anon_transpiler));
 
-            harmony.Patch(statRepUtil_StatsToDraw_anon_original, transpiler: new HarmonyMethod(typeof(extraStats_QualityCategory_Transpiler_Patch).GetMethod("Transpiler", AccessTools.all)));
+            var hm = new HarmonyMethod(typeof(extraStats_QualityCategory_Transpiler_Patch).GetMethod("Transpiler", AccessTools.all));
+            harmony.Patch(statRepUtil_StatsToDraw_anon_original, transpiler: hm);
+            harmony.Patch(AccessTools.Method(typeof(StatsReportUtility), "DrawStatsReport", new Type[] { typeof(Rect), typeof(Def), typeof(ThingDef) }), transpiler: hm);
+            harmony.Patch(AccessTools.Method(typeof(StatsReportUtility), "StatsToDraw", new Type[] { typeof(Def), typeof(ThingDef) }), transpiler: hm);
 
             maxUsableWindIntensity = (float)AccessTools.Field(typeof(CompPowerPlantWind), "MaxUsableWindIntensity").GetValue(1.569f);
             fullSunPower = ((float)AccessTools.Field(typeof(CompPowerPlantSolar), "FullSunPower").GetValue(1690f)).ToString("F0") + W;
@@ -101,8 +104,6 @@ namespace ExtraStats
             }
         }
 
-    [HarmonyPatch(typeof(StatsReportUtility), "DrawStatsReport", new Type[] { typeof(Rect), typeof(Def), typeof(ThingDef) })]
-    [HarmonyPatch(typeof(StatsReportUtility), "StatsToDraw", new Type[] { typeof(Def), typeof(ThingDef) })]
     static class extraStats_QualityCategory_Transpiler_Patch
         {
         public static MethodInfo srfor = AccessTools.Method(typeof(StatRequest), "For", new Type[] { typeof(BuildableDef), typeof(ThingDef), typeof(QualityCategory) });
