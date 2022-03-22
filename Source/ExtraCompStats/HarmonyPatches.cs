@@ -67,7 +67,7 @@ namespace ExtraStats
     public static class extraStats_InfoCard_Patch
         {
         public static QualityCategory category = QualityCategory.Normal;
-        private static MethodInfo setup = AccessTools.Method(typeof(Dialog_InfoCard), "Setup");
+        private static readonly MethodInfo setup = AccessTools.Method(typeof(Dialog_InfoCard), "Setup");
 
         static void Postfix(Dialog_InfoCard __instance, Rect inRect, Def ___def, List<Hyperlink> ___history)
             {
@@ -116,15 +116,15 @@ namespace ExtraStats
 
     static class extraStats_StatsReportUtility_DrawStatsReport_anon_Patch
         {
-        private static Type statReqCont = AccessTools.FirstInner(typeof(StatsReportUtility),
+        private static readonly Type statReqCont = AccessTools.FirstInner(typeof(StatsReportUtility),
                 inner => inner.Name.Contains("Class20"));
-        private static Type that = AccessTools.FirstInner(typeof(StatsReportUtility),
+        private static readonly Type that = AccessTools.FirstInner(typeof(StatsReportUtility),
                 inner => inner.GetField("def", AccessTools.all) != null);
 
-        private static MethodInfo srfor = AccessTools.Method(typeof(StatExtension), "GetStatValueAbstract", new Type[] { typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
-        private static MethodInfo callVirt = AccessTools.Method(typeof(StatWorker), "GetValue", new Type[] { typeof(StatRequest), typeof(bool) });
+        private static readonly MethodInfo srfor = AccessTools.Method(typeof(StatExtension), "GetStatValueAbstract", new Type[] { typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
+        private static readonly MethodInfo callVirt = AccessTools.Method(typeof(StatWorker), "GetValue", new Type[] { typeof(StatRequest), typeof(bool) });
 
-        private static FieldInfo bDef = AccessTools.GetDeclaredFields(that).First(info => info.FieldType == typeof(BuildableDef));
+        private static readonly FieldInfo bDef = AccessTools.GetDeclaredFields(that).First(info => info.FieldType == typeof(BuildableDef));
 
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
             {
@@ -258,11 +258,26 @@ namespace ExtraStats
     [HarmonyPatch(typeof(BuildableDef), "SpecialDisplayStats")]
     static class extraStats_God_BuildableDef_Patch
         {
-        static void Postfix(ref IEnumerable<StatDrawEntry> __result, BuildableDef __instance, ref StatRequest req)
+        static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, BuildableDef __instance, StatRequest req)
             {
+            if (!ret.EnumerableNullOrEmpty())
+                {
+                foreach (StatDrawEntry item in ret)
+                    {
+                    yield return item;
+                    }
+                }
             if (StatDefOf.ShootingAccuracyTurret.Worker.ShouldShowFor(req))
                 {
-                __result.AddItem(new StatDrawEntry(StatDefOf.ShootingAccuracyTurret.category, StatDefOf.ShootingAccuracyTurret.labelForFullStatList, StatDefOf.ShootingAccuracyPawn.postProcessCurve.EvaluateInverted(__instance.GetStatValueAbstract(StatDefOf.ShootingAccuracyTurret)).ToString("F2"), StatDefOf.ShootingAccuracyTurret.description, StatDefOf.ShootingAccuracyTurret.displayPriorityInCategory - 1));
+                // __result = __result.AddItem()
+                yield return new StatDrawEntry(StatDefOf.ShootingAccuracyTurret.category, StatDefOf.ShootingAccuracyTurret.labelForFullStatList, StatDefOf.ShootingAccuracyPawn.postProcessCurve.EvaluateInverted(__instance.GetStatValueAbstract(StatDefOf.ShootingAccuracyTurret)).ToString("F2"), StatDefOf.ShootingAccuracyTurret.description, StatDefOf.ShootingAccuracyTurret.displayPriorityInCategory - 1);
+                }
+
+            if (StatDefOf.RangedWeapon_Cooldown.Worker.ShouldShowFor(req))
+                {
+                yield return new StatDrawEntryDPS(StatCategoryDefOf.Weapon_Ranged, "princess.ExtraStats.DPSGraph".Translate(), "", "princess.ExtraStats.DPSGraph.Desc".Translate(), 5500 - 1);
+
+                yield return new StatDrawEntryAccuracy(StatCategoryDefOf.Weapon_Ranged, "princess.ExtraStats.AccuracyGraph".Translate(), "", "princess.ExtraStats.AccuracyGraph.Desc".Translate(), StatDefOf.AccuracyLong.displayPriorityInCategory - 1);
                 }
             }
         }

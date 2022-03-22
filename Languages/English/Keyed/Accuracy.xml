@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<princess.ExtraStats.Range>range</princess.ExtraStats.Range>
+	<princess.ExtraStats.AccuracyLevel>accuracy</princess.ExtraStats.AccuracyLevel>
+
+	<princess.ExtraStats.DPSGraph>DPS graph</princess.ExtraStats.DPSGraph>
+	<princess.ExtraStats.AccuracyGraph>accuracy graph</princess.ExtraStats.AccuracyGraph>
+
+	<princess.ExtraStats.DPSGraph.Desc>Damage per second of the weapon. Do note that DPS isn't everything, and some weapons or turrets benefit more from direct accuracy data than DPS, because they already kill their targets in a single shot.</princess.ExtraStats.DPSGraph.Desc>
+	<princess.ExtraStats.AccuracyGraph.Desc>Accuracy of the weapon. The greener, the better!</princess.ExtraStats.AccuracyGraph.Desc>
+
+
+	<princess.ExtraStats.dump>Dump graph cache to disk</princess.ExtraStats.dump>
+
+	<princess.ExtraStats.minLevel>Minimum accuracy level</princess.ExtraStats.minLevel>
+	<princess.ExtraStats.minLevel.Desc>(-5, 0)</princess.ExtraStats.minLevel.Desc>
+	<princess.ExtraStats.maxLevel>Maximum accuracy level</princess.ExtraStats.maxLevel>
+	<princess.ExtraStats.maxLevel.Desc>(1, 60)</princess.ExtraStats.maxLevel.Desc>
+
+	<princess.ExtraStats.scale>Graph scale</princess.ExtraStats.scale>
+	<princess.ExtraStats.scale.Desc>(1, 16)</princess.ExtraStats.scale.Desc>
+	<princess.ExtraStats.beyond>Graph maximum value multiplier</princess.ExtraStats.beyond>
+	<princess.ExtraStats.beyond.Desc>(2, 16)</princess.ExtraStats.beyond.Desc>
+	<princess.ExtraStats.colors>Graph palette</princess.ExtraStats.colors>
+	<princess.ExtraStats.colors.Desc>(2, 64)</princess.ExtraStats.colors.Desc>
+</LanguageData>
