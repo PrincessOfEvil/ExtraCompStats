@@ -84,6 +84,8 @@ namespace ExtraStats
                 if (colors.Value == null) colors.Value = new ColorArrayHandle().initialize();
                 return ColorArrayHandle.CustomDrawer(rect, ref colors.Value.colors);
                 };
+            if (StatDrawEntryAccuracy.spectrum.NullOrEmpty())
+                StatDrawEntryAccuracy.spectrum = colors.Value.colors.ListFullCopy<Color>();
             }
         public override void SettingsChanged()
             {
