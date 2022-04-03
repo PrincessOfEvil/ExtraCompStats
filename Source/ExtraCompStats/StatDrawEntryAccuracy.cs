@@ -2,6 +2,7 @@
 using HugsLib;
 using HugsLib.Settings;
 using RimWorld;
+using RimWorld.Planet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -201,13 +202,52 @@ namespace ExtraStats
             }
 
         public static float accuracyFromShooterGunAndDist(Thing gun, float level, float range)
-            {
-            if (range < gun.TryGetVerb().minRange) return 0;
-            float accuracy = ShotReport.HitFactorFromShooter(StatDefOf.ShootingAccuracyPawn.postProcessCurve.Evaluate(level), range);
-            accuracy *= gun.TryGetVerb().GetHitChanceFactor(gun.GetGun(), range);
-            return Math.Max(accuracy, 0.0201f);
+            {/*
+            if (!ExtraStatsSettings.extremeCompatMode)
+                {*/
+                if (range < gun.TryGetVerb().minRange) return 0;
+                float accuracy = ShotReport.HitFactorFromShooter(StatDefOf.ShootingAccuracyPawn.postProcessCurve.Evaluate(level), range);
+                accuracy *= gun.TryGetVerb().GetHitChanceFactor(gun.GetGun(), range);
+                return Mathf.Clamp(accuracy, 0.0201f, 1f);/*
+                }
+            else return extremeHeresy(gun, level, range);*/
             }
+        /*
+        private static float extremeHeresy(Thing gun, float level, float range) 
+            {
+            // Genuine Yayo code here, test purposes only
 
+            float srAccuracy = ShotReport.HitFactorFromShooter(StatDefOf.ShootingAccuracyPawn.postProcessCurve.Evaluate(level), range);
+            srAccuracy *= gun.TryGetVerb().GetHitChanceFactor(gun.GetGun(), range);
+            srAccuracy = Mathf.Clamp(srAccuracy, 0.0201f, 1f);
+
+            float missR = (1f - srAccuracy * 0.5f);
+            if (missR < 0f) missR = 0f;
+
+            float factorStat = 0.95f;
+            float factorSkill = level / 20f;
+            factorStat = 1f - (factorStat * factorSkill);
+
+            float factorEquip = 1f - gun.TryGetVerb().GetHitChanceFactor(gun.GetGun(), range);
+
+            float factorGas = 1f;
+
+            float factorWeather = 1f;
+
+            float factorAir = factorGas * factorWeather;
+
+            missR *= (0.6f * factorStat + (1f - 0.6f)) * factorAir + (1f - factorAir);
+
+            if (range < 10f)
+                {
+                missR -= Mathf.Clamp((10f - range) * 0.07f, 0f, 0.3f);
+                }
+
+            missR = missR * 0.95f + 0.05f;
+            Mathf.Clamp(missR, 0.05f, 0.95f);
+
+            return Mathf.Clamp01(1f - missR);
+            }*/
         public static void VectorLabel(Vector2 position, string label)
             {
             Rect rect = new Rect(position.x - 8f, position.y - 24f, 9999f, 100f);

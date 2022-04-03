@@ -22,7 +22,9 @@ namespace ExtraStats
         public static SettingHandle<int> scale;
         public static SettingHandle<int> beyond;
         public static SettingHandle<ColorArrayHandle> colors;
-
+        /*
+        public static SettingHandle<bool> extremeCompatMode;
+        */
         public override string ModIdentifier
             {
             get { return "princess.ExtraStats"; }
@@ -48,13 +50,13 @@ namespace ExtraStats
             minLevel = Settings.GetHandle<int>(
                     "princess.ExtraStats.minLevel",
                     "princess.ExtraStats.minLevel".Translate(),
-                    "princess.ExtraStats.minLevel.desc".Translate(),
+                    "princess.ExtraStats.minLevel.Desc".Translate(),
                     -5,
                     Validators.IntRangeValidator(-5, 0));
             maxLevel = Settings.GetHandle<int>(
                     "princess.ExtraStats.maxLevel",
                     "princess.ExtraStats.maxLevel".Translate(),
-                    "princess.ExtraStats.maxLevel.desc".Translate(),
+                    "princess.ExtraStats.maxLevel.Desc".Translate(),
                     30,
                     Validators.IntRangeValidator(1, 60));
 
@@ -68,7 +70,7 @@ namespace ExtraStats
             beyond = Settings.GetHandle<int>(
                     "princess.ExtraStats.beyond",
                     "princess.ExtraStats.beyond".Translate(),
-                    "princess.ExtraStats.beyond.desc".Translate(),
+                    "princess.ExtraStats.beyond.Desc".Translate(),
                     2,
                     Validators.IntRangeValidator(2, 16));
 
@@ -76,7 +78,7 @@ namespace ExtraStats
             colors = Settings.GetHandle<ColorArrayHandle>(
                     "princess.ExtraStats.colors",
                     "princess.ExtraStats.colors".Translate(),
-                    "princess.ExtraStats.colors.desc".Translate());
+                    "princess.ExtraStats.colors.Desc".Translate());
             colors.CustomDrawerHeight = ColorArrayHandle.elementHeight * 3.5f;
             if (colors.Value == null) colors.Value = new ColorArrayHandle().initialize();
             colors.CustomDrawer = rect =>
@@ -86,6 +88,13 @@ namespace ExtraStats
                 };
             if (StatDrawEntryAccuracy.spectrum.NullOrEmpty())
                 StatDrawEntryAccuracy.spectrum = colors.Value.colors.ListFullCopy<Color>();
+
+            /*
+            extremeCompatMode = Settings.GetHandle<bool>(
+                    "princess.ExtraStats.extremeCompatMode",
+                    "princess.ExtraStats.extremeCompatMode".Translate(),
+                    "princess.ExtraStats.extremeCompatMode.Desc".Translate(),
+                    false);*/
             }
         public override void SettingsChanged()
             {
