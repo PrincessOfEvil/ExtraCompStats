@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using HugsLib;
 using HugsLib.Settings;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,7 +32,8 @@ namespace ExtraStats
             }
         public override void DefsLoaded()
             {
-            Settings.ContextMenuEntries = new[] {new ContextMenuEntry("princess.ExtraStats.dump".Translate(), () =>
+            Settings.ContextMenuEntries = new[] {
+                new ContextMenuEntry("princess.ExtraStats.dump".Translate(), () =>
                 {
                 if (StatDrawEntryAccuracy.renderedStats != null)
                     foreach (var texture in StatDrawEntryAccuracy.renderedStats)
@@ -45,9 +47,17 @@ namespace ExtraStats
                         Log.Message("[ExtraStats] Dumped all textures to: " + path);
                         File.WriteAllBytes(path + key.Item1.defName + key.Item2 + key.Item3 + ".png", texture.Value.EncodeToPNG());
                         }
-                })};
+                }),
+                new ContextMenuEntry("dumpEverything", () =>
+                {
+                    foreach (var def in from x in DefDatabase<ThingDef>.AllDefsListForReading
+                                        where x.IsRangedWeapon
+                                        select x)
+                        StatDrawEntryAccuracy.Render(0f, new Rect(), Util.StatRequestFor(def, null, QualityCategory.Legendary).Thing, new StatDrawEntryDPS(StatCategoryDefOf.Weapon_Ranged, "", "", "", 0));
+                })
+                };
 
-            minLevel = Settings.GetHandle<int>(
+        minLevel = Settings.GetHandle<int>(
                     "princess.ExtraStats.minLevel",
                     "princess.ExtraStats.minLevel".Translate(),
                     "princess.ExtraStats.minLevel.Desc".Translate(),

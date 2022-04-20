@@ -66,7 +66,7 @@ namespace ExtraStats
                         for (int level = 0; level <= maxLevel - minLevel; level++)
                             {
                             float accuracy = accuracyFromShooterGunAndDist(thing, level + minLevel, range);
-                            accuracy = stat.transformAccuracy(accuracy, thing);
+                            accuracy = stat.transformAccuracy(accuracy, thing, level + minLevel);
 
                             if (range < minRange || accuracy <= 0f)
                                 texture.SetPixel(range - 1, maxLevel - minLevel - level, Color.black.ToTransparent(0));
@@ -184,7 +184,7 @@ namespace ExtraStats
                     Widgets.DrawLightHighlight(rectAcc);
                     Widgets.DrawHighlight(drawrect);
 
-                    VectorLabel(mousePos, stat.label(stat.transformAccuracy(accuracyFromShooterGunAndDist(thing, dataVec), thing)));
+                    VectorLabel(mousePos, stat.label(stat.transformAccuracy(accuracyFromShooterGunAndDist(thing, dataVec), thing, dataVec.y)));
                     }
                 currentY += texture.height * scale;
 
@@ -263,7 +263,7 @@ namespace ExtraStats
             {
             return acc.ToStringPercentEmptyZero("F1");
             }
-        public virtual float transformAccuracy(float acc, Thing thing)
+        public virtual float transformAccuracy(float acc, Thing thing, float level)
             {
             return acc;
             }
@@ -294,7 +294,7 @@ namespace ExtraStats
             {
             return (acc * maxDPS).ToStringEmptyZero("F2");
             }
-        public override float transformAccuracy(float acc, Thing thing)
+        public override float transformAccuracy(float acc, Thing thing, float level)
             {
             var verb = thing.TryGetVerb();
 
@@ -307,7 +307,7 @@ namespace ExtraStats
                 (verb.defaultProjectile?.projectile?.GetDamageAmount(thing) ?? 1) *
                 verb.burstShotCount /
                 (verb.warmupTime +
-                thing.GetRangedCooldown() +
+                thing.GetRangedCooldown(level) +
                 (verb.ticksBetweenBurstShots / GenTicks.TicksPerRealSecond) *
                 (verb.burstShotCount - 1));
             }
@@ -355,7 +355,7 @@ namespace ExtraStats
             return null;
             }
 
-        public static float GetRangedCooldown(this Thing thing)
+        public static float GetRangedCooldown(this Thing thing, float acc)
             {
             if (thing.def.IsRangedWeapon)
                 return thing.GetStatValue(StatDefOf.RangedWeapon_Cooldown);

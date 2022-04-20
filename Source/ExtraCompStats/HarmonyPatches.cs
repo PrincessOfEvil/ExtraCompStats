@@ -114,6 +114,26 @@ namespace ExtraStats
         }
 
 
+    [HarmonyPatch(typeof(StatsReportUtility), "StatsToDraw", new[] { typeof(Def), typeof(ThingDef) })]
+    public static class extraStats_StatsReportUtility_DrawStatsReport_Patch
+        {
+        public static Thing cache;
+        static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, Def def, ThingDef stuff)
+            {
+            foreach (var stat in ret) yield return stat;
+            if (def is ThingDef tDef)
+                {
+                if (cache?.def != tDef)
+                    cache = ThingMaker.MakeThing(tDef, stuff);
+
+                foreach (var stat in cache.SpecialDisplayStats()) yield return stat;
+
+                if (!cache.Destroyed) cache.Destroy();
+                if (!cache.Discarded) cache.Discard(true);
+                }
+            }
+        }
+
     static class extraStats_StatsReportUtility_DrawStatsReport_anon_Patch
         {
         private static readonly Type statReqCont = AccessTools.FirstInner(typeof(StatsReportUtility),
