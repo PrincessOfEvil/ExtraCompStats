@@ -287,6 +287,13 @@ namespace ExtraStats
                     yield return item;
                     }
                 }
+
+            if (__instance is ThingDef def && def.building != null)
+                {
+                yield return new StatDrawEntry(StatCategoryDefOf.Building, "princess.ExtraStats.Minifiable".Translate(), def.Minifiable.ToString(), "princess.ExtraStats.Minifiable.Desc".Translate(), 5500);
+                yield return new StatDrawEntry(StatCategoryDefOf.Building, "princess.ExtraStats.Size".Translate(), def.size.ToString(), "princess.ExtraStats.Size.Desc".Translate(), 5500 - 1);
+                }
+
             if (StatDefOf.ShootingAccuracyTurret.Worker.ShouldShowFor(req))
                 {
                 // __result = __result.AddItem()

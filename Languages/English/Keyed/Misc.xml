@@ -4,4 +4,11 @@
 	<princess.ExtraStats.breakdownable.desc>Whether this can break down randomly.</princess.ExtraStats.breakdownable.desc>
 
 	<princess.ExtraStats.showQuality>Change quality...</princess.ExtraStats.showQuality>
+
+
+	<princess.ExtraStats.Minifiable>minifiable?</princess.ExtraStats.Minifiable>
+	<princess.ExtraStats.Minifiable.Desc>Whether this can be minified to store or move.</princess.ExtraStats.Minifiable.Desc>
+
+	<princess.ExtraStats.Size>size</princess.ExtraStats.Size>
+	<princess.ExtraStats.Size.Desc>How much space this building takes.</princess.ExtraStats.Size.Desc>
 </LanguageData>
