@@ -13,6 +13,12 @@ How much power this produces.
 Do note that both vanilla and modded buildings have a habit of misreporting their power production values, so take it with a grain of salt.
 	</princess.ExtraStats.basePowerConsumption.desc>
 
+	<princess.ExtraStats.powerConsumption>nominal power production (current)</princess.ExtraStats.powerConsumption>
+	<princess.ExtraStats.powerConsumption.desc>
+How much power this produces. Takes into account all current modifiers like research.
+Do note that both vanilla and modded buildings have a habit of misreporting their power production values, so take it with a grain of salt.
+	</princess.ExtraStats.powerConsumption.desc>
+
 	<princess.ExtraStats.solarPowerOutput>nominal power production (solar)</princess.ExtraStats.solarPowerOutput>
 	<princess.ExtraStats.solarPowerOutput.desc>
 How much power this solar panel produces.

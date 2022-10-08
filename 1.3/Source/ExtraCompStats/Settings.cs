@@ -33,51 +33,51 @@ namespace ExtraStats
         public override void DefsLoaded()
             {
             Settings.ContextMenuEntries = new[] {
-                new ContextMenuEntry("princess.ExtraStats.dump".Translate(), () =>
-                {
-                if (StatDrawEntryAccuracy.renderedStats != null)
-                    foreach (var texture in StatDrawEntryAccuracy.renderedStats)
-                        {
-                        var path = ModContentPack.RootDir + "/AccuracyImages/";
-                        var key = texture.Key;
-                        if (!Directory.Exists(path))
-                            {
-                            Directory.CreateDirectory(path);
-                            }
-                        Log.Message("[ExtraStats] Dumped all textures to: " + path);
-                        File.WriteAllBytes(path + key.Item1.defName + key.Item2 + key.Item3 + ".png", texture.Value.EncodeToPNG());
-                        }
-                }),
-                new ContextMenuEntry("dumpEverything", () =>
-                {
-                    foreach (var def in from x in DefDatabase<ThingDef>.AllDefsListForReading
-                                        where x.IsRangedWeapon
-                                        select x)
-                        StatDrawEntryAccuracy.Render(0f, new Rect(), Util.StatRequestFor(def, null, QualityCategory.Legendary).Thing, new StatDrawEntryDPS(StatCategoryDefOf.Weapon_Ranged, "", "", "", 0));
-                })
-                };
+                                                    new ContextMenuEntry("princess.ExtraStats.dump".Translate(), () =>
+                                                                             {
+                                                                             if (StatDrawEntryAccuracy.renderedStats != null)
+                                                                                 foreach (var texture in StatDrawEntryAccuracy.renderedStats)
+                                                                                     {
+                                                                                     var path = ModContentPack.RootDir + "/AccuracyImages/";
+                                                                                     var key = texture.Key;
+                                                                                     if (!Directory.Exists(path))
+                                                                                         {
+                                                                                         Directory.CreateDirectory(path);
+                                                                                         }
+                                                                                     Log.Message("[ExtraStats] Dumped all textures to: " + path);
+                                                                                     File.WriteAllBytes(path + key.Item1.defName + key.Item2 + key.Item3 + ".png", texture.Value.EncodeToPNG());
+                                                                                     }
+                                                                             }),
+                                                    new ContextMenuEntry("dumpEverything", () =>
+                                                                             {
+                                                                             foreach (var def in from x in DefDatabase<ThingDef>.AllDefsListForReading
+                                                                                  where x.IsRangedWeapon
+                                                                                  select x)
+                                                                                 StatDrawEntryAccuracy.Render(0f, new Rect(), Util.StatRequestFor(def, null, QualityCategory.Legendary).Thing, new StatDrawEntryDPS(StatCategoryDefOf.Weapon_Ranged, "", "", "", 0));
+                                                                             })
+                                                    };
 
-        minLevel = Settings.GetHandle<int>(
+        minLevel = Settings.GetHandle(
                     "princess.ExtraStats.minLevel",
                     "princess.ExtraStats.minLevel".Translate(),
                     "princess.ExtraStats.minLevel.Desc".Translate(),
                     -5,
                     Validators.IntRangeValidator(-5, 0));
-            maxLevel = Settings.GetHandle<int>(
+            maxLevel = Settings.GetHandle(
                     "princess.ExtraStats.maxLevel",
                     "princess.ExtraStats.maxLevel".Translate(),
                     "princess.ExtraStats.maxLevel.Desc".Translate(),
                     30,
                     Validators.IntRangeValidator(1, 60));
 
-            scale = Settings.GetHandle<int>(
+            scale = Settings.GetHandle(
                     "princess.ExtraStats.scale",
                     "princess.ExtraStats.scale".Translate(),
                     "princess.ExtraStats.scale.desc".Translate(),
                     12,
                     Validators.IntRangeValidator(1, 16));
 
-            beyond = Settings.GetHandle<int>(
+            beyond = Settings.GetHandle(
                     "princess.ExtraStats.beyond",
                     "princess.ExtraStats.beyond".Translate(),
                     "princess.ExtraStats.beyond.Desc".Translate(),
@@ -89,15 +89,15 @@ namespace ExtraStats
                     "princess.ExtraStats.colors",
                     "princess.ExtraStats.colors".Translate(),
                     "princess.ExtraStats.colors.Desc".Translate());
-            colors.CustomDrawerHeight = ColorArrayHandle.elementHeight * 3.5f;
+            colors.CustomDrawerHeight = ColorArrayHandle.ELEMENT_HEIGHT * 3.5f;
             if (colors.Value == null) colors.Value = new ColorArrayHandle().initialize();
             colors.CustomDrawer = rect =>
                 {
                 if (colors.Value == null) colors.Value = new ColorArrayHandle().initialize();
-                return ColorArrayHandle.CustomDrawer(rect, ref colors.Value.colors);
+                return ColorArrayHandle.customDrawer(rect, ref colors.Value.colorList);
                 };
             if (StatDrawEntryAccuracy.spectrum.NullOrEmpty())
-                StatDrawEntryAccuracy.spectrum = colors.Value.colors.ListFullCopy<Color>();
+                StatDrawEntryAccuracy.spectrum = colors.Value.colorList.ListFullCopy();
 
             /*
             extremeCompatMode = Settings.GetHandle<bool>(
@@ -114,7 +114,7 @@ namespace ExtraStats
             StatDrawEntryAccuracy.maxLevel = maxLevel;
             StatDrawEntryAccuracy.scale = scale;
             StatDrawEntryAccuracy.beyond = beyond;
-            StatDrawEntryAccuracy.spectrum = colors.Value.colors.ListFullCopy<Color>();
+            StatDrawEntryAccuracy.spectrum = colors.Value.colorList.ListFullCopy();
             // Clean up caches
             StatDrawEntryAccuracy.renderedStats.Clear();
             StatDrawEntryAccuracy.bar = null;
@@ -123,48 +123,45 @@ namespace ExtraStats
 
         public class ColorArrayHandle : SettingHandleConvertible
             {
-            public List<Color> colors = new List<Color>();
+            public List<Color> colorList = new List<Color>();
 
-            public override bool ShouldBeSaved
-                {
-                get => colors.Count > 0 && !colors.SetsEqual(StatDrawEntryAccuracy.defaultSpectrum);
-                }
+            public override bool ShouldBeSaved => colorList.Count > 0 && !colorList.SetsEqual(StatDrawEntryAccuracy.defaultSpectrum);
 
             public override void FromString(string settingValue)
                 {
-                colors = DirectXmlLoader.ItemFromXmlString<List<Color>>(settingValue, "([ExtraStats] internal color settings loader)");
+                colorList = DirectXmlLoader.ItemFromXmlString<List<Color>>(settingValue, "([ExtraStats] internal color settings loader)");
                 }
 
             public override string ToString()
                 {
-                return DirectXmlSaver.XElementFromObject(colors, typeof(List<Color>), "List-Color").ToString();
+                return DirectXmlSaver.XElementFromObject(colorList, typeof(List<Color>), "List-Color").ToString();
                 }
 
             public ColorArrayHandle initialize()
                 {
-                colors = StatDrawEntryAccuracy.defaultSpectrum.ListFullCopy<Color>();
+                colorList = StatDrawEntryAccuracy.defaultSpectrum.ListFullCopy();
                 return this;
                 }
             private static Color WindowBGBorderColor = (Color)AccessTools.Field(typeof(Widgets), "WindowBGBorderColor").GetValue(null);
 
-            public static readonly float elementHeight = 48f;
-            public static readonly float elementHeightQuarter = elementHeight / 4f;
-            public static readonly float elementHeightMicro = elementHeight / 3f;
-            public static readonly float elementMargin = 4f;
-            public static readonly float elementMarginSlider = (elementHeightMicro - elementHeightQuarter) / 2;
+            public static readonly float ELEMENT_HEIGHT = 48f;
+            public static readonly float ELEMENT_HEIGHT_QUARTER = ELEMENT_HEIGHT / 4f;
+            public static readonly float ELEMENT_HEIGHT_MICRO = ELEMENT_HEIGHT / 3f;
+            public static readonly float ELEMENT_MARGIN = 4f;
+            public static readonly float ELEMENT_MARGIN_SLIDER = (ELEMENT_HEIGHT_MICRO - ELEMENT_HEIGHT_QUARTER) / 2;
 
             public static float textOffset;
 
             public static Vector2 scroll;
 
-            public static readonly Regex regex = new Regex("^[1]?[0-9]{1,2}$|^[2][0-4][0-9]$|^[2][5][0-6]$");
+            public static readonly Regex REGEX = new Regex("^[1]?[0-9]{1,2}$|^[2][0-4][0-9]$|^[2][5][0-6]$");
 
             // i - button type
             // 0:^, 1:v, 2:+, 3:x
             // 64 elements ought to be enough for everybody
             public static bool[,] buttons = new bool[64, 4];
 
-            public static bool CustomDrawer(Rect rect, ref List<Color> value)
+            public static bool customDrawer(Rect rect, ref List<Color> value)
                 {
                 //Widgets.DrawBoxSolidWithOutline(rect, Color.clear, Color.cyan);
                 var font = Text.Font;
@@ -179,63 +176,63 @@ namespace ExtraStats
                 bool change = false;
 
                 Rect outRect = new Rect(rect);
-                outRect.height = elementHeight * value.Count + elementMargin * (value.Count - 1);
-                outRect.width -= elementHeight;
+                outRect.height = ELEMENT_HEIGHT * value.Count + ELEMENT_MARGIN * (value.Count - 1);
+                outRect.width -= ELEMENT_HEIGHT;
 
                 Widgets.BeginScrollView(rect, ref scroll, outRect);
 
                 Rect innerRect = new Rect(outRect);
-                innerRect.x += elementHeight + elementMargin;
-                innerRect.width -= elementHeight * 2 + elementMargin;
-                innerRect.height = elementHeightMicro;
+                innerRect.x += ELEMENT_HEIGHT + ELEMENT_MARGIN;
+                innerRect.width -= ELEMENT_HEIGHT * 2 + ELEMENT_MARGIN;
+                innerRect.height = ELEMENT_HEIGHT_MICRO;
 
                 for (int i = 0; i < value.Count; i++)
                     {
                     Text.Anchor = TextAnchor.MiddleCenter;
 
-                    Widgets.DrawBoxSolidWithOutline(new Rect(outRect.x, curY, elementHeight, elementHeight).ContractedBy(elementMargin), value[i], WindowBGBorderColor);
+                    Widgets.DrawBoxSolidWithOutline(new Rect(outRect.x, curY, ELEMENT_HEIGHT, ELEMENT_HEIGHT).ContractedBy(ELEMENT_MARGIN), value[i], WindowBGBorderColor);
 
                     Rect rRect = new Rect(innerRect)
                         {
                         y = curY
                         };
-                    r = Widgets.HorizontalSlider(rRect.ContractedBy(0, elementMarginSlider), value[i].r.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
+                    r = Widgets.HorizontalSlider(rRect.ContractedBy(0, ELEMENT_MARGIN_SLIDER), value[i].r.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
 
                     rRect.x = rRect.xMax;
                     rRect.y -= textOffset;
-                    rRect.width = elementHeight / 2 ;
+                    rRect.width = ELEMENT_HEIGHT / 2 ;
                     Text.Font = GameFont.Tiny;
-                    r = int.Parse(Widgets.TextField(rRect, r.toColorInt().ToString(), 3, regex)).toColorFloat();
+                    r = int.Parse(Widgets.TextField(rRect, r.toColorInt().ToString(), 3, REGEX)).toColorFloat();
 
                     if (i > 0)
                         {
                         rRect.x = rRect.xMax;
                         rRect.y = curY;
-                        rRect.width = elementHeightMicro;
+                        rRect.width = ELEMENT_HEIGHT_MICRO;
                         Text.Font = GameFont.Small;
                         button = Widgets.ButtonText(rRect, "▲");
                         if (!button && buttons[i, 0])
                             move = i;
                         buttons[i, 0] = button;
                         }
-                    curY += elementHeightMicro;
+                    curY += ELEMENT_HEIGHT_MICRO;
 
                     Rect gRect = new Rect(innerRect)
                         {
                         y = curY
                         };
-                    g = Widgets.HorizontalSlider(gRect.ContractedBy(0, elementMarginSlider), value[i].g.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
+                    g = Widgets.HorizontalSlider(gRect.ContractedBy(0, ELEMENT_MARGIN_SLIDER), value[i].g.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
 
                     gRect.x = gRect.xMax;
                     gRect.y -= textOffset;
-                    gRect.width = elementHeight / 2;
+                    gRect.width = ELEMENT_HEIGHT / 2;
                     Text.Font = GameFont.Tiny;
-                    g = int.Parse(Widgets.TextField(gRect, g.toColorInt().ToString(), 3, regex)).toColorFloat();
+                    g = int.Parse(Widgets.TextField(gRect, g.toColorInt().ToString(), 3, REGEX)).toColorFloat();
 
 
                     gRect.x = gRect.xMax;
                     gRect.y = curY;
-                    gRect.width = elementHeightMicro;
+                    gRect.width = ELEMENT_HEIGHT_MICRO;
                     Text.Font = GameFont.Small;
                     button = Widgets.ButtonText(gRect, "✚");
                     if (!button && buttons[i, 2])
@@ -246,7 +243,7 @@ namespace ExtraStats
                         {
                         gRect.x = gRect.xMax;
                         gRect.y = curY;
-                        gRect.width = elementHeightMicro;
+                        gRect.width = ELEMENT_HEIGHT_MICRO;
                         Text.Font = GameFont.Small;
                         button = Widgets.ButtonText(gRect, "✘");
                         if (!button && buttons[i, 3])
@@ -254,43 +251,43 @@ namespace ExtraStats
                         buttons[i, 3] = button;
                         }
 
-                    curY += elementHeightMicro;
+                    curY += ELEMENT_HEIGHT_MICRO;
 
                     Rect bRect = new Rect(innerRect)
                         {
                         y = curY
                         };
-                    b = Widgets.HorizontalSlider(bRect.ContractedBy(0, elementMarginSlider), value[i].b.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
+                    b = Widgets.HorizontalSlider(bRect.ContractedBy(0, ELEMENT_MARGIN_SLIDER), value[i].b.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
 
                     bRect.x = bRect.xMax;
                     bRect.y -= textOffset;
-                    bRect.width = elementHeight / 2;
+                    bRect.width = ELEMENT_HEIGHT / 2;
                     Text.Font = GameFont.Tiny;
-                    b = int.Parse(Widgets.TextField(bRect, b.toColorInt().ToString(), 3, regex)).toColorFloat();
+                    b = int.Parse(Widgets.TextField(bRect, b.toColorInt().ToString(), 3, REGEX)).toColorFloat();
                     //Widgets.Label(bRect, Mathf.Round(b * colorSpace).ToString());
 
                     if (i != value.Count - 1)
                         {
                         bRect.x = bRect.xMax;
                         bRect.y = curY;
-                        bRect.width = elementHeightMicro;
+                        bRect.width = ELEMENT_HEIGHT_MICRO;
                         Text.Font = GameFont.Small;
                         button = Widgets.ButtonText(bRect, "▼");
                         if (!button && buttons[i, 1])
                             move = -i;
                         buttons[i, 1] = button;
                         }
-                    curY += elementHeightMicro;
+                    curY += ELEMENT_HEIGHT_MICRO;
 
-                    if (r != value[i].r || g != value[i].g || b != value[i].b)
+                    if (Mathf.Abs(r - value[i].r) > Mathf.Epsilon || Mathf.Abs(g - value[i].g) > Mathf.Epsilon || Mathf.Abs(b - value[i].b) > Mathf.Epsilon)
                         change = true;
 
                     value[i] = new Color(r,g,b);
-                    curY += elementMargin;
+                    curY += ELEMENT_MARGIN;
                     }
 
                 Widgets.EndScrollView();
-                curY += elementHeightMicro;
+                curY += ELEMENT_HEIGHT_MICRO;
                 Text.Font = font;
                 Text.Anchor = anchor;
 

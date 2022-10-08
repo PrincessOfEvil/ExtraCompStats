@@ -23,7 +23,7 @@ namespace ExtraStats
         public static float maxUsableWindIntensity;
         public static string fullSunPower;
         public const string W = " W";
-        public const string Wh = " Wh";
+        public const string WH = " Wh";
         static HarmonyPatches()
             {
             //Harmony.DEBUG = true;
@@ -45,8 +45,8 @@ namespace ExtraStats
             harmony.Patch(AccessTools.Method(typeof(StatsReportUtility), "DrawStatsReport", new Type[] { typeof(Rect), typeof(Def), typeof(ThingDef) }), transpiler: hm);
             harmony.Patch(AccessTools.Method(typeof(StatsReportUtility), "StatsToDraw", new Type[] { typeof(Def), typeof(ThingDef) }), transpiler: hm);
 
-            maxUsableWindIntensity = (float)AccessTools.Field(typeof(CompPowerPlantWind), "MaxUsableWindIntensity").GetValue(1.569f);
-            fullSunPower = ((float)AccessTools.Field(typeof(CompPowerPlantSolar), "FullSunPower").GetValue(1690f)).ToString("F0") + W;
+            maxUsableWindIntensity = (float)AccessTools.Field(typeof(CompPowerPlantWind), "MaxUsableWindIntensity").GetValue(1.569);
+            fullSunPower = ((float)AccessTools.Field(typeof(CompPowerPlantSolar), "FullSunPower").GetValue(1690)).ToString("F0") + W;
             }
         }
 
@@ -76,20 +76,20 @@ namespace ExtraStats
                 if (ShowQualityButton(inRect, ___history.Count > 0, def.MadeFromStuff))
                     {
                     List<FloatMenuOption> list = new List<FloatMenuOption>();
-                    foreach (QualityCategory category in (QualityCategory[])Enum.GetValues(typeof(QualityCategory)))
+                    foreach (QualityCategory qualityCategory in (QualityCategory[])Enum.GetValues(typeof(QualityCategory)))
                         {
-                        QualityCategory local = category;
-                        list.Add(new FloatMenuOption(category.GetLabel(), delegate
+                        QualityCategory local = qualityCategory;
+                        list.Add(new FloatMenuOption(qualityCategory.GetLabel(), delegate
                             {
                                 // FIXME: All hail storing things in static variables.
-                                extraStats_InfoCard_Patch.category = local;
+                                category = local;
                                 setup.Invoke(__instance, new object[] { });
                                 }));
                         }
                     Find.WindowStack.Add(new FloatMenu(list));
                     }
                 }
-            else extraStats_InfoCard_Patch.category = QualityCategory.Normal;
+            else category = QualityCategory.Normal;
 
             //Widgets.Label(new Rect(inRect.x + 200f, inRect.y + 18f, 200f, 40f), extraStats_InfoCard_Patch.category.GetLabel());
             }
@@ -206,7 +206,7 @@ namespace ExtraStats
         }
 
     [HarmonyPatch(typeof(CompProperties), "SpecialDisplayStats")]
-    static class extraStats_God_Properties_Patch
+    static class ExtraStats_God_Properties_Patch
         {
         static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, CompProperties __instance)
             {
@@ -222,16 +222,22 @@ namespace ExtraStats
                 {
                 if (compPower is CompProperties_Battery compBattery)
                     {
-                    yield return buildingStat("storedEnergyMax", compBattery.storedEnergyMax.ToString("F0") + Wh, 4949);
+                    yield return buildingStat("storedEnergyMax", compBattery.storedEnergyMax.ToString("F0") + HarmonyPatches.WH, 4949);
                     yield return buildingStat("efficiency", compBattery.efficiency.ToStringPercent(), 4945);
 
                     }
-                if (compPower.basePowerConsumption < 0f)
-                    yield return buildingStat("basePowerConsumption", (-compPower.basePowerConsumption).ToString("F0") + W, 5000);
+
+                float basePowerConsumption = AccessTools.FieldRefAccess<float>(typeof(CompProperties_Power), "basePowerConsumption")(compPower);
+                if (basePowerConsumption < 0f)
+                    {
+                    yield return buildingStat("basePowerConsumption", (-basePowerConsumption).ToString("F0") + W, 5001);
+                    if (Mathf.Abs(basePowerConsumption - compPower.PowerConsumption) > Mathf.Epsilon)
+                    yield return buildingStat("powerConsumption", (-compPower.PowerConsumption).ToString("F0") + W, 5000);
+                    }
                 if (compPower.compClass == typeof(CompPowerPlantSolar))
                     yield return buildingStat("solarPowerOutput", fullSunPower, 4995);
                 else if (compPower.compClass == typeof(CompPowerPlantWind))
-                    yield return buildingStat("windPowerOutput", (-compPower.basePowerConsumption * maxUsableWindIntensity).ToString("F0") + W, 4995);
+                    yield return buildingStat("windPowerOutput", (-basePowerConsumption * maxUsableWindIntensity).ToString("F0") + W, 4995);
 
                 if (compPower.transmitsPower)
                     yield return buildingStat("transmitsPower", compPower.transmitsPower.ToStringYesNo(), 4920);
@@ -276,7 +282,7 @@ namespace ExtraStats
      */
 
     [HarmonyPatch(typeof(BuildableDef), "SpecialDisplayStats")]
-    static class extraStats_God_BuildableDef_Patch
+    static class ExtraStats_God_BuildableDef_Patch
         {
         static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, BuildableDef __instance, StatRequest req)
             {
