@@ -10,6 +10,11 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
+// ReSharper disable RedundantDefaultMemberInitializer
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedType.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable MemberCanBeProtected.Global
 
 namespace ExtraStats
     {
@@ -18,6 +23,7 @@ namespace ExtraStats
         public StatDrawEntryAccuracy(StatCategoryDef category, string label, string valueString, string reportText, int displayPriorityWithinCategory, string overrideReportTitle = null, IEnumerable<Dialog_InfoCard.Hyperlink> hyperlinks = null, bool forceUnfinalizedMode = false) : base(category, label, valueString, reportText, displayPriorityWithinCategory, overrideReportTitle, hyperlinks, forceUnfinalizedMode)
             {}
 
+        // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public static Dictionary<(ThingDef, QualityCategory, int), Texture2D> renderedStats = new Dictionary<(ThingDef, QualityCategory, int), Texture2D>();
 
         public static int minLevel = -5;
@@ -28,7 +34,7 @@ namespace ExtraStats
 
         private static Vector2 scrollPosition;
 
-        public static readonly List<Color> defaultSpectrum = new List<Color>
+        public static readonly List<Color> DEFAULT_SPECTRUM = new List<Color>
             {
             new Color(0.34375f, 0.0625f, 0f),
             new Color(1f, 0.8125f, 0.40625f),
@@ -39,7 +45,7 @@ namespace ExtraStats
             new Color(1f, 0.5f, 1f)
             };
 
-        public static List<Color> spectrum = defaultSpectrum.ListFullCopy();
+        public static List<Color> spectrum = StatDrawEntryAccuracy.DEFAULT_SPECTRUM.ListFullCopy();
         public static Texture2D bar;
         public static Texture2D barBeyond;
 
@@ -160,7 +166,7 @@ namespace ExtraStats
                     var level = StatDefOf.ShootingAccuracyPawn.postProcessCurve.EvaluateInverted(thing.GetStatValue(StatDefOf.ShootingAccuracyTurret)) - minLevel;
                     Widgets.DrawBox(new Rect(margin, currentY + level * scale, texture.width * scale, scale));
                     }
-                else if (thing.ParentHolder != null && thing.ParentHolder is Pawn_EquipmentTracker pe)
+                else if (thing.ParentHolder is Pawn_EquipmentTracker pe)
                     {
                     var level = StatDefOf.ShootingAccuracyPawn.postProcessCurve.EvaluateInverted(pe.pawn.GetStatValue(StatDefOf.ShootingAccuracyPawn)) - minLevel;
                     Widgets.DrawBox(new Rect(margin, currentY + level * scale, texture.width * scale, scale));
@@ -378,22 +384,23 @@ namespace ExtraStats
         }
 
     [HarmonyPatch(typeof(StatsReportUtility), "DrawStatsReport", new Type[] { typeof(Rect), typeof(Def), typeof(ThingDef) })]
-    public static class extraStats_StatsReportUtility_DrawStatsReport_DSW_Patch
+    public static class ExtraStats_StatsReportUtility_DrawStatsReport_DSW_Patch
         {
-        private static readonly MethodInfo lfr = AccessTools.Method(typeof(StatsReportUtility), "DrawStatsWorker");
-        private static readonly MethodInfo make = AccessTools.Method(typeof(extraStats_StatsReportUtility_DrawStatsReport_DSW_Patch), "makeTempThingFrom");
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructionsIn, ILGenerator il)
+        private static readonly MethodInfo LFR = AccessTools.Method(typeof(StatsReportUtility), "DrawStatsWorker");
+        private static readonly MethodInfo MAKE = AccessTools.Method(typeof(ExtraStats_StatsReportUtility_DrawStatsReport_DSW_Patch), "makeTempThingFrom");
+
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructionsIn, ILGenerator il)
             {
             var instructions = instructionsIn.ToList();
             for (int i = 0; i < instructions.Count; i++)
                 {
                 if (i + 2 < instructions.Count &&
                     instructions[i].opcode == OpCodes.Ldnull &&
-                    instructions[i+2].Calls(lfr))
+                    instructions[i+2].Calls(ExtraStats_StatsReportUtility_DrawStatsReport_DSW_Patch.LFR))
                     {
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Ldarg_2);
-                    yield return new CodeInstruction(OpCodes.Call, make);
+                    yield return new CodeInstruction(OpCodes.Call, ExtraStats_StatsReportUtility_DrawStatsReport_DSW_Patch.MAKE);
                     }
                 else yield return instructions[i];
                 }
@@ -419,11 +426,12 @@ namespace ExtraStats
         }
 
     [HarmonyPatch(typeof(StatsReportUtility), "DrawStatsWorker")]
-    public static class extraStats_StatsReportUtility_DrawStatsWorker_Patch
+    public static class ExtraStats_StatsReportUtility_DrawStatsWorker_Patch
         {
-        private static readonly MethodInfo render = AccessTools.Method(typeof(StatDrawEntryAccuracy), nameof(StatDrawEntryAccuracy.Render));
-        private static readonly MethodInfo lfr = AccessTools.Method(typeof(Widgets), "BeginScrollView");
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        private static readonly MethodInfo RENDER = AccessTools.Method(typeof(StatDrawEntryAccuracy), nameof(StatDrawEntryAccuracy.Render));
+        // private static readonly MethodInfo LFR = AccessTools.Method(typeof(Widgets), "BeginScrollView");
+
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
             {
             foreach (var instruction in instructions)
                 {
@@ -437,7 +445,7 @@ namespace ExtraStats
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Ldloc_S, 4);
-                    yield return new CodeInstruction(OpCodes.Call, render);
+                    yield return new CodeInstruction(OpCodes.Call, RENDER);
                     }
 
                 yield return instruction;

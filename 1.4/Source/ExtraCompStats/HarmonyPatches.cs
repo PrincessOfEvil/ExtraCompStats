@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 using static ExtraStats.Util;
@@ -14,14 +12,17 @@ using UnityEngine;
 using static Verse.Dialog_InfoCard;
 using System.Reflection.Emit;
 
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
+
 #pragma warning disable IDE0051 // Remove unused private members
 namespace ExtraStats
     {
     [StaticConstructorOnStartup]
     public static class HarmonyPatches
         {
-        public static float maxUsableWindIntensity;
-        public static string fullSunPower;
+        public static readonly float MAX_USABLE_WIND_INTENSITY;
+        public static readonly string FULL_SUN_POWER;
         public const string W = " W";
         public const string WH = " Wh";
         static HarmonyPatches()
@@ -34,28 +35,31 @@ namespace ExtraStats
 
             var statRepUtil_StatsToDraw_anon_original = AccessTools.FirstMethod(
                 AccessTools.FirstInner(typeof(StatsReportUtility),
-                inner => inner.GetField("def", AccessTools.all) != null),
+                inner => inner.GetField("def", AccessTools.all) != null && inner.GetField("stuff", AccessTools.all) != null),
                 method => method.Name.Contains("MoveNext"));
 
-            var statRepUtil_StatsToDraw_anon_transpiler = typeof(extraStats_StatsReportUtility_DrawStatsReport_anon_Patch).GetMethod("Transpiler", AccessTools.all);
-            harmony.Patch(statRepUtil_StatsToDraw_anon_original, transpiler: new HarmonyMethod(statRepUtil_StatsToDraw_anon_transpiler));
+            var statRepUtil_StatsToDraw_anon_transpiler =
+                AccessTools.Method(typeof(extraStats_StatsReportUtility_DrawStatsReport_anon_Patch),
+                                   nameof(extraStats_StatsReportUtility_DrawStatsReport_anon_Patch.Transpiler));
 
+            harmony.Patch(statRepUtil_StatsToDraw_anon_original, transpiler: new HarmonyMethod(statRepUtil_StatsToDraw_anon_transpiler));
+            
             var hm = new HarmonyMethod(typeof(extraStats_QualityCategory_Transpiler_Patch).GetMethod("Transpiler", AccessTools.all));
             harmony.Patch(statRepUtil_StatsToDraw_anon_original, transpiler: hm);
-            harmony.Patch(AccessTools.Method(typeof(StatsReportUtility), "DrawStatsReport", new Type[] { typeof(Rect), typeof(Def), typeof(ThingDef) }), transpiler: hm);
-            harmony.Patch(AccessTools.Method(typeof(StatsReportUtility), "StatsToDraw", new Type[] { typeof(Def), typeof(ThingDef) }), transpiler: hm);
+            harmony.Patch(AccessTools.Method(typeof(StatsReportUtility), "DrawStatsReport", new[] { typeof(Rect), typeof(Def), typeof(ThingDef) }), transpiler: hm);
+            harmony.Patch(AccessTools.Method(typeof(StatsReportUtility), "StatsToDraw", new[] { typeof(Def), typeof(ThingDef) }), transpiler: hm);
 
-            maxUsableWindIntensity = (float)AccessTools.Field(typeof(CompPowerPlantWind), "MaxUsableWindIntensity").GetValue(1.569);
-            fullSunPower = ((float)AccessTools.Field(typeof(CompPowerPlantSolar), "FullSunPower").GetValue(1690)).ToString("F0") + W;
+            HarmonyPatches.MAX_USABLE_WIND_INTENSITY = (float)AccessTools.Field(typeof(CompPowerPlantWind), "MaxUsableWindIntensity").GetValue(1.569);
+            HarmonyPatches.FULL_SUN_POWER = ((float)AccessTools.Field(typeof(CompPowerPlantSolar), "FullSunPower").GetValue(1690)).ToString("F0") + W;
             }
         }
 
     [HarmonyPatch(typeof(Dialog_InfoCard), "GetTitle")]
     public static class extraStats_InfoCard_GetTitle_Patch
         {
-        static string Postfix(string ret, Dialog_InfoCard __instance, Def ___def)
+        public static string Postfix(string ret, Dialog_InfoCard __instance, Def ___def)
             {
-            if (___def != null && ___def is ThingDef def && def.HasComp(typeof(CompQuality)))
+            if (___def is ThingDef def && def.HasComp(typeof(CompQuality)))
                 {
                 return ret + " (" + extraStats_InfoCard_Patch.category.GetLabel() + ")";
                 }
@@ -69,23 +73,20 @@ namespace ExtraStats
         public static QualityCategory category = QualityCategory.Normal;
         private static readonly MethodInfo setup = AccessTools.Method(typeof(Dialog_InfoCard), "Setup");
 
-        static void Postfix(Dialog_InfoCard __instance, Rect inRect, Def ___def, List<Hyperlink> ___history)
+        public static void Postfix(Dialog_InfoCard __instance, Rect inRect, Def ___def, List<Hyperlink> ___history)
             {
-            if (___def != null && ___def is ThingDef def && def.HasComp(typeof(CompQuality)))
+            if (___def is ThingDef def && def.HasComp(typeof(CompQuality)))
                 {
                 if (ShowQualityButton(inRect, ___history.Count > 0, def.MadeFromStuff))
                     {
-                    List<FloatMenuOption> list = new List<FloatMenuOption>();
-                    foreach (QualityCategory qualityCategory in (QualityCategory[])Enum.GetValues(typeof(QualityCategory)))
-                        {
-                        QualityCategory local = qualityCategory;
-                        list.Add(new FloatMenuOption(qualityCategory.GetLabel(), delegate
-                            {
-                                // FIXME: All hail storing things in static variables.
-                                category = local;
-                                setup.Invoke(__instance, new object[] { });
-                                }));
-                        }
+                    List<FloatMenuOption> list = (from qualityCategory in (QualityCategory[]) Enum.GetValues(typeof(QualityCategory))
+                                                  let local = qualityCategory
+                                                  select new FloatMenuOption(qualityCategory.GetLabel(), delegate
+                                                      {
+                                                      // FIXME: All hail storing things in static variables.
+                                                      extraStats_InfoCard_Patch.category = local;
+                                                      extraStats_InfoCard_Patch.setup.Invoke(__instance, new object[] { });
+                                                      })).ToList();
                     Find.WindowStack.Add(new FloatMenu(list));
                     }
                 }
@@ -106,10 +107,11 @@ namespace ExtraStats
 
     static class extraStats_QualityCategory_Transpiler_Patch
         {
-        public static MethodInfo srfor = AccessTools.Method(typeof(StatRequest), "For", new Type[] { typeof(BuildableDef), typeof(ThingDef), typeof(QualityCategory) });
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        public static readonly MethodInfo searchFor = AccessTools.Method(typeof(StatRequest), "For", new[] { typeof(BuildableDef), typeof(ThingDef), typeof(QualityCategory) });
+
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
             {
-            return instructions.MethodReplacer(srfor, AccessTools.Method(typeof(Util), nameof(StatRequestFor)));
+            return instructions.MethodReplacer(extraStats_QualityCategory_Transpiler_Patch.searchFor, AccessTools.Method(typeof(Util), nameof(StatRequestFor)));
             }
         }
 
@@ -117,6 +119,7 @@ namespace ExtraStats
     [HarmonyPatch(typeof(StatsReportUtility), "StatsToDraw", new[] { typeof(Def), typeof(ThingDef) })]
     public static class extraStats_StatsReportUtility_DrawStatsReport_Patch
         {
+        // ReSharper disable once MemberCanBePrivate.Global
         public static Thing cache;
         static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, Def def, ThingDef stuff)
             {
@@ -136,24 +139,29 @@ namespace ExtraStats
 
     static class extraStats_StatsReportUtility_DrawStatsReport_anon_Patch
         {
-        private static readonly Type statReqCont = AccessTools.FirstInner(typeof(StatsReportUtility),
-                inner => inner.Name.Contains("Class20"));
+        private static Type statReqCont /*= AccessTools.FirstInner(typeof(StatsReportUtility),
+                inner => inner.Name.Contains("Class22"))*/;
         private static readonly Type that = AccessTools.FirstInner(typeof(StatsReportUtility),
                 inner => inner.GetField("def", AccessTools.all) != null);
 
-        private static readonly MethodInfo srfor = AccessTools.Method(typeof(StatExtension), "GetStatValueAbstract", new Type[] { typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
-        private static readonly MethodInfo callVirt = AccessTools.Method(typeof(StatWorker), "GetValue", new Type[] { typeof(StatRequest), typeof(bool) });
+        private static readonly MethodInfo searchFor = AccessTools.Method(typeof(StatExtension), "GetStatValueAbstract", new[] { typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
+        private static readonly MethodInfo callVirt = AccessTools.Method(typeof(StatWorker), "GetValue", new[] { typeof(StatRequest), typeof(bool) });
 
         private static readonly FieldInfo bDef = AccessTools.GetDeclaredFields(that).First(info => info.FieldType == typeof(BuildableDef));
 
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il, MethodBase original)
             {
+            // setup
+            statReqCont =
+                original.GetMethodBody()!.LocalVariables.First(local => local.LocalType!.IsSealed && local.LocalType.Namespace!.Contains("RimWorld")).LocalType;
+            
             var instructionsList = instructions.ToList();
 
             Label returnValue = il.DefineLabel();
             // LocalBuilder statReqContLocal = il.DeclareLocal(statReqCont);
 
             // init the third local
+            
             yield return new CodeInstruction(OpCodes.Newobj, AccessTools.Constructor(statReqCont));
             yield return new CodeInstruction(OpCodes.Stloc_3);
 
@@ -174,7 +182,7 @@ namespace ExtraStats
             yield return new CodeInstruction(OpCodes.Ldarg_0);
             yield return new CodeInstruction(OpCodes.Ldfld, that.GetField("stuff", AccessTools.all));
             yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(extraStats_InfoCard_Patch), nameof(extraStats_InfoCard_Patch.category)));
-            yield return new CodeInstruction(OpCodes.Call, extraStats_QualityCategory_Transpiler_Patch.srfor);
+            yield return new CodeInstruction(OpCodes.Call, extraStats_QualityCategory_Transpiler_Patch.searchFor);
             yield return new CodeInstruction(OpCodes.Stfld, AccessTools.Field(statReqCont, "statRequest"));
 
             yield return new CodeInstruction(OpCodes.Nop) { labels = new List<Label> { returnValue } };
@@ -184,7 +192,7 @@ namespace ExtraStats
                 var item = instructionsList[i];
                 if (i < instructionsList.Count() - 6 && // making sure not to OOB
                     item.opcode == OpCodes.Ldarg_0 &&
-                    instructionsList[i + 5].Calls(srfor) &&
+                    instructionsList[i + 5].Calls(extraStats_StatsReportUtility_DrawStatsReport_anon_Patch.searchFor) &&
                     // Extra insanity checks
                     instructionsList[i + 1].opcode == OpCodes.Ldfld &&
                     instructionsList[i + 4].opcode == OpCodes.Ldfld)
@@ -232,12 +240,12 @@ namespace ExtraStats
                     {
                     yield return buildingStat("basePowerConsumption", (-basePowerConsumption).ToString("F0") + W, 5001);
                     if (Mathf.Abs(basePowerConsumption - compPower.PowerConsumption) > Mathf.Epsilon)
-                    yield return buildingStat("powerConsumption", (-compPower.PowerConsumption).ToString("F0") + W, 5000);
+                        yield return buildingStat("powerConsumption", (-compPower.PowerConsumption).ToString("F0") + W, 5000);
                     }
                 if (compPower.compClass == typeof(CompPowerPlantSolar))
-                    yield return buildingStat("solarPowerOutput", fullSunPower, 4995);
+                    yield return buildingStat("solarPowerOutput", HarmonyPatches.FULL_SUN_POWER, 4995);
                 else if (compPower.compClass == typeof(CompPowerPlantWind))
-                    yield return buildingStat("windPowerOutput", (-basePowerConsumption * maxUsableWindIntensity).ToString("F0") + W, 4995);
+                    yield return buildingStat("windPowerOutput", (-basePowerConsumption * HarmonyPatches.MAX_USABLE_WIND_INTENSITY).ToString("F0") + W, 4995);
 
                 if (compPower.transmitsPower)
                     yield return buildingStat("transmitsPower", compPower.transmitsPower.ToStringYesNo(), 4920);
@@ -294,6 +302,7 @@ namespace ExtraStats
                     }
                 }
 
+            // ReSharper disable once MergeIntoPattern : genuinely unreadable
             if (__instance is ThingDef def && def.building != null)
                 {
                 yield return new StatDrawEntry(StatCategoryDefOf.Building, "princess.ExtraStats.Minifiable".Translate(), def.Minifiable.ToString(), "princess.ExtraStats.Minifiable.Desc".Translate(), 5500);

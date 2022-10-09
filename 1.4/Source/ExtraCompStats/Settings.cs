@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
+// ReSharper disable ConvertTypeCheckPatternToNullCheck
 
 namespace ExtraStats
     {
@@ -18,6 +19,7 @@ namespace ExtraStats
         {
         protected override bool HarmonyAutoPatch => false;
 
+        // ReSharper disable MemberCanBePrivate.Global
         public static SettingHandle<int> minLevel;
         public static SettingHandle<int> maxLevel;
         public static SettingHandle<int> scale;
@@ -26,10 +28,9 @@ namespace ExtraStats
         /*
         public static SettingHandle<bool> extremeCompatMode;
         */
-        public override string ModIdentifier
-            {
-            get { return "princess.ExtraStats"; }
-            }
+        // ReSharper restore MemberCanBePrivate.Global
+        public override string ModIdentifier => "princess.ExtraStats";
+
         public override void DefsLoaded()
             {
             Settings.ContextMenuEntries = new[] {
@@ -90,10 +91,10 @@ namespace ExtraStats
                     "princess.ExtraStats.colors".Translate(),
                     "princess.ExtraStats.colors.Desc".Translate());
             colors.CustomDrawerHeight = ColorArrayHandle.ELEMENT_HEIGHT * 3.5f;
-            if (colors.Value == null) colors.Value = new ColorArrayHandle().initialize();
+            ExtraStatsSettings.colors.Value ??= new ColorArrayHandle().initialize();
             colors.CustomDrawer = rect =>
                 {
-                if (colors.Value == null) colors.Value = new ColorArrayHandle().initialize();
+                ExtraStatsSettings.colors.Value ??= new ColorArrayHandle().initialize();
                 return ColorArrayHandle.customDrawer(rect, ref colors.Value.colorList);
                 };
             if (StatDrawEntryAccuracy.spectrum.NullOrEmpty())
@@ -125,7 +126,7 @@ namespace ExtraStats
             {
             public List<Color> colorList = new List<Color>();
 
-            public override bool ShouldBeSaved => colorList.Count > 0 && !colorList.SetsEqual(StatDrawEntryAccuracy.defaultSpectrum);
+            public override bool ShouldBeSaved => colorList.Count > 0 && !colorList.SetsEqual(StatDrawEntryAccuracy.DEFAULT_SPECTRUM);
 
             public override void FromString(string settingValue)
                 {
@@ -139,27 +140,31 @@ namespace ExtraStats
 
             public ColorArrayHandle initialize()
                 {
-                colorList = StatDrawEntryAccuracy.defaultSpectrum.ListFullCopy();
+                colorList = StatDrawEntryAccuracy.DEFAULT_SPECTRUM.ListFullCopy();
                 return this;
                 }
-            private static Color WindowBGBorderColor = (Color)AccessTools.Field(typeof(Widgets), "WindowBGBorderColor").GetValue(null);
+            private static readonly Color WINDOW_BG_BORDER_COLOR = (Color)AccessTools.Field(typeof(Widgets), "WindowBGBorderColor").GetValue(null);
 
-            public static readonly float ELEMENT_HEIGHT = 48f;
-            public static readonly float ELEMENT_HEIGHT_QUARTER = ELEMENT_HEIGHT / 4f;
-            public static readonly float ELEMENT_HEIGHT_MICRO = ELEMENT_HEIGHT / 3f;
-            public static readonly float ELEMENT_MARGIN = 4f;
-            public static readonly float ELEMENT_MARGIN_SLIDER = (ELEMENT_HEIGHT_MICRO - ELEMENT_HEIGHT_QUARTER) / 2;
+            // ReSharper disable MemberCanBePrivate.Global
+            public const float ELEMENT_HEIGHT = 48f;
+            public const float ELEMENT_HEIGHT_QUARTER = ELEMENT_HEIGHT / 4f;
+            public const float ELEMENT_HEIGHT_MICRO = ELEMENT_HEIGHT / 3f;
+            public const float ELEMENT_MARGIN = 4f;
+            public const float ELEMENT_MARGIN_SLIDER = (ELEMENT_HEIGHT_MICRO - ELEMENT_HEIGHT_QUARTER) / 2;
 
-            public static float textOffset;
+            public const float TEXT_OFFSET = 0f;
 
             public static Vector2 scroll;
 
             public static readonly Regex REGEX = new Regex("^[1]?[0-9]{1,2}$|^[2][0-4][0-9]$|^[2][5][0-6]$");
 
+            // ReSharper disable once FieldCanBeMadeReadOnly.Global
             // i - button type
             // 0:^, 1:v, 2:+, 3:x
             // 64 elements ought to be enough for everybody
             public static bool[,] buttons = new bool[64, 4];
+            
+            // ReSharper restore MemberCanBePrivate.Global
 
             public static bool customDrawer(Rect rect, ref List<Color> value)
                 {
@@ -168,13 +173,12 @@ namespace ExtraStats
                 var anchor = Text.Anchor;
                 float curY = rect.y;
 
-                float r, g, b;
-                bool button;
                 int? move = null;
                 int? edit = null;
 
                 bool change = false;
 
+                // ReSharper disable once UseObjectOrCollectionInitializer
                 Rect outRect = new Rect(rect);
                 outRect.height = ELEMENT_HEIGHT * value.Count + ELEMENT_MARGIN * (value.Count - 1);
                 outRect.width -= ELEMENT_HEIGHT;
@@ -190,20 +194,21 @@ namespace ExtraStats
                     {
                     Text.Anchor = TextAnchor.MiddleCenter;
 
-                    Widgets.DrawBoxSolidWithOutline(new Rect(outRect.x, curY, ELEMENT_HEIGHT, ELEMENT_HEIGHT).ContractedBy(ELEMENT_MARGIN), value[i], WindowBGBorderColor);
+                    Widgets.DrawBoxSolidWithOutline(new Rect(outRect.x, curY, ELEMENT_HEIGHT, ELEMENT_HEIGHT).ContractedBy(ELEMENT_MARGIN), value[i], ColorArrayHandle.WINDOW_BG_BORDER_COLOR);
 
                     Rect rRect = new Rect(innerRect)
                         {
                         y = curY
                         };
-                    r = Widgets.HorizontalSlider(rRect.ContractedBy(0, ELEMENT_MARGIN_SLIDER), value[i].r.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
+                    float r = Widgets.HorizontalSlider(rRect.ContractedBy(0, ColorArrayHandle.ELEMENT_MARGIN_SLIDER), value[i].r.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
 
                     rRect.x = rRect.xMax;
-                    rRect.y -= textOffset;
+                    rRect.y -= ColorArrayHandle.TEXT_OFFSET;
                     rRect.width = ELEMENT_HEIGHT / 2 ;
                     Text.Font = GameFont.Tiny;
                     r = int.Parse(Widgets.TextField(rRect, r.toColorInt().ToString(), 3, REGEX)).toColorFloat();
 
+                    bool button;
                     if (i > 0)
                         {
                         rRect.x = rRect.xMax;
@@ -221,10 +226,10 @@ namespace ExtraStats
                         {
                         y = curY
                         };
-                    g = Widgets.HorizontalSlider(gRect.ContractedBy(0, ELEMENT_MARGIN_SLIDER), value[i].g.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
+                    float g = Widgets.HorizontalSlider(gRect.ContractedBy(0, ColorArrayHandle.ELEMENT_MARGIN_SLIDER), value[i].g.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
 
                     gRect.x = gRect.xMax;
-                    gRect.y -= textOffset;
+                    gRect.y -= ColorArrayHandle.TEXT_OFFSET;
                     gRect.width = ELEMENT_HEIGHT / 2;
                     Text.Font = GameFont.Tiny;
                     g = int.Parse(Widgets.TextField(gRect, g.toColorInt().ToString(), 3, REGEX)).toColorFloat();
@@ -257,10 +262,10 @@ namespace ExtraStats
                         {
                         y = curY
                         };
-                    b = Widgets.HorizontalSlider(bRect.ContractedBy(0, ELEMENT_MARGIN_SLIDER), value[i].b.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
+                    float b = Widgets.HorizontalSlider(bRect.ContractedBy(0, ColorArrayHandle.ELEMENT_MARGIN_SLIDER), value[i].b.toColorInt(), 0, 255, roundTo: 1).toColorFloat();
 
                     bRect.x = bRect.xMax;
-                    bRect.y -= textOffset;
+                    bRect.y -= ColorArrayHandle.TEXT_OFFSET;
                     bRect.width = ELEMENT_HEIGHT / 2;
                     Text.Font = GameFont.Tiny;
                     b = int.Parse(Widgets.TextField(bRect, b.toColorInt().ToString(), 3, REGEX)).toColorFloat();
@@ -296,16 +301,13 @@ namespace ExtraStats
                     change = true;
                     bool direction = mv > 0;
                     mv = Math.Abs(mv);
-                    Color storage = value[mv];
-                    value[mv] = value[mv + (direction ? -1 : 1)];
-                    value[mv + (direction ? -1 : 1)] = storage;
+                    (value[mv], value[mv + (direction ? -1 : 1)]) = (value[mv + (direction ? -1 : 1)], value[mv]);
                     }
                 else if (edit is int ed)
                     {
                     change = true;
                     bool isDel = ed <= 0;
-                    if (ed == int.MaxValue) ed = 0;
-                    else ed = Math.Abs(ed);
+                    ed = ed == int.MaxValue ? 0 : Math.Abs(ed);
                     if (isDel)
                         value.RemoveAt(ed);
                     else value.Insert(ed, new Color(0, 0, 0));
@@ -318,7 +320,7 @@ namespace ExtraStats
 
     public static class SettingsExt
         {
-        public static readonly float colorSpace = 255f;
+        private static readonly float colorSpace = 255f;
         public static int toColorInt(this float c)
             {
             return Mathf.RoundToInt(c * colorSpace);
