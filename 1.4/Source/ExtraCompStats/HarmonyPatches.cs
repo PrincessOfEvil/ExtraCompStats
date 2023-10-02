@@ -123,8 +123,9 @@ namespace ExtraStats
         public static Thing cache;
         static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, Def def, ThingDef stuff)
             {
-            foreach (var stat in ret) yield return stat;
-            if (def is ThingDef tDef)
+            if (!ret.EnumerableNullOrEmpty())
+                foreach (var stat in ret) yield return stat;
+            if (def is ThingDef tDef && !typeof(Pawn).IsAssignableFrom(tDef.thingClass))
                 {
                 if (cache?.def != tDef)
                     cache = ThingMaker.MakeThing(tDef, stuff);
@@ -219,12 +220,7 @@ namespace ExtraStats
         static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, CompProperties __instance)
             {
             if (!ret.EnumerableNullOrEmpty())
-                {
-                foreach (StatDrawEntry item in ret)
-                    {
-                    yield return item;
-                    }
-                }
+                foreach (StatDrawEntry item in ret) yield return item;
 
             if (__instance is CompProperties_Power compPower)
                 {
@@ -295,12 +291,7 @@ namespace ExtraStats
         static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, BuildableDef __instance, StatRequest req)
             {
             if (!ret.EnumerableNullOrEmpty())
-                {
-                foreach (StatDrawEntry item in ret)
-                    {
-                    yield return item;
-                    }
-                }
+                foreach (StatDrawEntry item in ret) yield return item;
 
             // ReSharper disable once MergeIntoPattern : genuinely unreadable
             if (__instance is ThingDef def && def.building != null)

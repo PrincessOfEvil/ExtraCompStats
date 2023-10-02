@@ -36,7 +36,7 @@
       <HintPath>..\..\..\..\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp, Version=1.4.8315.26675, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="Assembly-CSharp, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>

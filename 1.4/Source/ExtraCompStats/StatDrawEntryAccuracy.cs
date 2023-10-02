@@ -408,20 +408,18 @@ namespace ExtraStats
 
         public static Thing makeTempThingFrom(Def def, ThingDef stuff)
             {
-            if (def is ThingDef tDef)
+            if (def is not ThingDef tDef || typeof(Pawn).IsAssignableFrom(tDef.thingClass)) return null;
+            
+            var thing = ThingMaker.MakeThing(tDef, stuff);
+            if (tDef.HasComp(typeof(CompQuality)))
                 {
-                var thing = ThingMaker.MakeThing(tDef, stuff);
-                if (tDef.HasComp(typeof(CompQuality)))
-                    {
-                    thing.TryGetComp<CompQuality>()?.SetQuality(extraStats_InfoCard_Patch.category, ArtGenerationContext.Outsider);
-                    }
-
-                thing.Destroy();
-                if (!thing.Discarded) thing.Discard(true);
-
-                return thing;
+                thing.TryGetComp<CompQuality>()?.SetQuality(extraStats_InfoCard_Patch.category, ArtGenerationContext.Outsider);
                 }
-            return null;
+
+            thing.Destroy();
+            if (!thing.Discarded) thing.Discard(true);
+
+            return thing;
             }
         }
 
