@@ -319,6 +319,7 @@ namespace ExtraStats
                 (verb.warmupTime +
                 thing.GetRangedCooldown(level) +
                 (verb.ticksBetweenBurstShots / GenTicks.TicksPerRealSecond) *
+                (verb.ticksBetweenBurstShots / GenTicks.TicksPerRealSecond) *
                 (verb.burstShotCount - 1));
             }
         public override int GetTypeHash()
@@ -406,6 +407,7 @@ namespace ExtraStats
                 }
             }
 
+        private const int magic = 1_69;
         public static Thing makeTempThingFrom(Def def, ThingDef stuff)
             {
             if (def is not ThingDef tDef || typeof(Pawn).IsAssignableFrom(tDef.thingClass)) return null;
@@ -415,9 +417,17 @@ namespace ExtraStats
                 {
                 thing.TryGetComp<CompQuality>()?.SetQuality(extraStats_InfoCard_Patch.category, ArtGenerationContext.Outsider);
                 }
-
-            thing.Destroy();
-            if (!thing.Discarded) thing.Discard(true);
+            
+            try
+                {
+                if (thing.stackCount != magic && !thing.Destroyed) thing.Destroy();
+                if (thing.stackCount != magic && !thing.Discarded) thing.Discard(true);
+                }
+            catch (Exception e)
+                {
+                thing.stackCount = magic;
+                Log.ErrorOnce(e.ToString(), tDef.GetHashCode() - magic);
+                }
 
             return thing;
             }

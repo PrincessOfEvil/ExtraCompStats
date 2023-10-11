@@ -11,6 +11,7 @@ using static ExtraStats.HarmonyPatches;
 using UnityEngine;
 using static Verse.Dialog_InfoCard;
 using System.Reflection.Emit;
+// ReSharper disable PossibleMultipleEnumeration
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming
@@ -119,8 +120,9 @@ namespace ExtraStats
     [HarmonyPatch(typeof(StatsReportUtility), "StatsToDraw", new[] { typeof(Def), typeof(ThingDef) })]
     public static class extraStats_StatsReportUtility_DrawStatsReport_Patch
         {
+        private const int magic = 1_69;
         // ReSharper disable once MemberCanBePrivate.Global
-        public static Thing cache;
+        public  static Thing cache;
         static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> ret, Def def, ThingDef stuff)
             {
             if (!ret.EnumerableNullOrEmpty())
@@ -132,8 +134,16 @@ namespace ExtraStats
 
                 foreach (var stat in cache.SpecialDisplayStats()) yield return stat;
 
-                if (!cache.Destroyed) cache.Destroy();
-                if (!cache.Discarded) cache.Discard(true);
+                try
+                    {
+                    if (cache.stackCount != magic && !cache.Destroyed) cache.Destroy();
+                    if (cache.stackCount != magic && !cache.Discarded) cache.Discard(true);
+                    }
+                catch (Exception e)
+                    {
+                    cache.stackCount = magic;
+                    Log.ErrorOnce(e.ToString(), tDef.GetHashCode() - magic);
+                    }
                 }
             }
         }
