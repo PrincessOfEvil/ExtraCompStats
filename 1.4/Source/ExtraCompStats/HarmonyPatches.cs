@@ -308,6 +308,9 @@ namespace ExtraStats
                 {
                 yield return new StatDrawEntry(StatCategoryDefOf.Building, "princess.ExtraStats.Minifiable".Translate(), def.Minifiable.ToString(), "princess.ExtraStats.Minifiable.Desc".Translate(), 5500);
                 yield return new StatDrawEntry(StatCategoryDefOf.Building, "princess.ExtraStats.Size".Translate(), def.size.ToString(), "princess.ExtraStats.Size.Desc".Translate(), 5500 - 1);
+                
+                if (def.building.maxItemsInCell > 1)
+                    yield return buildingStat("maxItemsPerCell", def.building.maxItemsInCell.ToString(), 5500 - 2);
                 }
 
             if (StatDefOf.ShootingAccuracyTurret.Worker.ShouldShowFor(req))

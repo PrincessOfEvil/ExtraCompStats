@@ -11,4 +11,7 @@
 
 	<princess.ExtraStats.Size>size</princess.ExtraStats.Size>
 	<princess.ExtraStats.Size.Desc>How much space this building takes.</princess.ExtraStats.Size.Desc>
+	
+	<princess.ExtraStats.maxItemsPerCell>max items per cell</princess.ExtraStats.maxItemsPerCell>
+	<princess.ExtraStats.maxItemsPerCell.Desc>How many items per cell this building can store.</princess.ExtraStats.maxItemsPerCell.Desc>
 </LanguageData>
