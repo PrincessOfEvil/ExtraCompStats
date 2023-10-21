@@ -11,6 +11,8 @@ using static ExtraStats.HarmonyPatches;
 using UnityEngine;
 using static Verse.Dialog_InfoCard;
 using System.Reflection.Emit;
+using System.Text;
+
 // ReSharper disable PossibleMultipleEnumeration
 
 // ReSharper disable UnusedMember.Local
@@ -304,13 +306,20 @@ namespace ExtraStats
                 foreach (StatDrawEntry item in ret) yield return item;
 
             // ReSharper disable once MergeIntoPattern : genuinely unreadable
-            if (__instance is ThingDef def && def.building != null)
+            if (__instance is ThingDef def && def.building is not null)
                 {
                 yield return new StatDrawEntry(StatCategoryDefOf.Building, "princess.ExtraStats.Minifiable".Translate(), def.Minifiable.ToString(), "princess.ExtraStats.Minifiable.Desc".Translate(), 5500);
                 yield return new StatDrawEntry(StatCategoryDefOf.Building, "princess.ExtraStats.Size".Translate(), def.size.ToString(), "princess.ExtraStats.Size.Desc".Translate(), 5500 - 1);
                 
                 if (def.building.maxItemsInCell > 1)
-                    yield return buildingStat("maxItemsPerCell", def.building.maxItemsInCell.ToString(), 5500 - 2);
+                    yield return buildingStat("maxItemsPerCell", def.building.maxItemsInCell.ToString(), 5500 - 8);
+
+                if (def.building.fixedStorageSettings is not null)
+                    {
+                    yield return new StatDrawEntry(StatCategoryDefOf.Building,
+                                                   "princess.ExtraStats.fixedStorageSettings".Translate(), "",
+                                                   Util.TranslateReportString("princess.ExtraStats.fixedStorageSettings.Desc", def.building.fixedStorageSettings), 5500 - 9);
+                    }
                 }
 
             if (StatDefOf.ShootingAccuracyTurret.Worker.ShouldShowFor(req))
@@ -334,6 +343,46 @@ namespace ExtraStats
             {
             return new StatDrawEntry(StatCategoryDefOf.Building, ("princess.ExtraStats." + stat).Translate(),
                     input, ("princess.ExtraStats." + stat + ".desc").Translate(), priority);
+            }
+        
+        
+        public static string TranslateReportString(string desc, StorageSettings storageSettings)
+            {
+            var filterCats = (List<string>) AccessTools.Field(typeof(ThingFilter), "categories").GetValue(storageSettings.filter);
+            var cats       = new StringBuilder();
+            if (filterCats is not null)
+                foreach (var cat in filterCats)
+                    {
+                    cats.Append(" - ");
+                    cats.AppendLine(DefDatabase<ThingCategoryDef>.GetNamed(cat).label);
+                    }
+            var filterDCats = (List<string>) AccessTools.Field(typeof(ThingFilter), "disallowedCategories").GetValue(storageSettings.filter);
+            var dCats       = new StringBuilder();
+            if (filterDCats is not null)
+                foreach (var cat in filterDCats)
+                    {
+                    dCats.Append(" - ");
+                    dCats.AppendLine(DefDatabase<ThingCategoryDef>.GetNamed(cat).label);
+                    }
+            var filterDefs = (List<ThingDef>) AccessTools.Field(typeof(ThingFilter), "thingDefs").GetValue(storageSettings.filter);
+            var defs        = new StringBuilder();
+            if (filterDefs is not null)
+                foreach (var def in filterDefs)
+                    {
+                    defs.Append(" - ");
+                    defs.AppendLine(def.label);
+                    }
+
+            var filterDDefs = (List<ThingDef>) AccessTools.Field(typeof(ThingFilter), "disallowedThingDefs").GetValue(storageSettings.filter);
+            var dDefs       = new StringBuilder();
+            if (filterDDefs is not null)
+                foreach (var def in filterDDefs)
+                    {
+                    dDefs.Append(" - ");
+                    dDefs.AppendLine(def.label);
+                    }
+            return desc.Translate(cats.ToString(), dCats.ToString(), 
+                           defs.ToString(), dDefs.ToString());
             }
 
         public static StatRequest StatRequestFor(BuildableDef def, ThingDef stuffDef, QualityCategory quality = QualityCategory.Normal)

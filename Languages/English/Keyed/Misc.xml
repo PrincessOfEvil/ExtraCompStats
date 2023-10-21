@@ -2,6 +2,9 @@
 <LanguageData>
 	<princess.ExtraStats.breakdownable>can break down</princess.ExtraStats.breakdownable>
 	<princess.ExtraStats.breakdownable.desc>Whether this can break down randomly.</princess.ExtraStats.breakdownable.desc>
+	
+	<princess.ExtraStats.maxItemsPerCell>max items per cell</princess.ExtraStats.maxItemsPerCell>
+	<princess.ExtraStats.maxItemsPerCell.desc>How many items per cell this building can store.</princess.ExtraStats.maxItemsPerCell.desc>
 
 	<princess.ExtraStats.showQuality>Change quality...</princess.ExtraStats.showQuality>
 
@@ -12,6 +15,15 @@
 	<princess.ExtraStats.Size>size</princess.ExtraStats.Size>
 	<princess.ExtraStats.Size.Desc>How much space this building takes.</princess.ExtraStats.Size.Desc>
 	
-	<princess.ExtraStats.maxItemsPerCell>max items per cell</princess.ExtraStats.maxItemsPerCell>
-	<princess.ExtraStats.maxItemsPerCell.Desc>How many items per cell this building can store.</princess.ExtraStats.maxItemsPerCell.Desc>
+	<princess.ExtraStats.fixedStorageSettings>Storage settings</princess.ExtraStats.fixedStorageSettings>
+	<princess.ExtraStats.fixedStorageSettings.Desc>
+Allowed categories:
+{0}
+Disallowed categories:
+{1}
+Allowed things:
+{2}
+Disallowed things:
+{3}
+	</princess.ExtraStats.fixedStorageSettings.Desc>
 </LanguageData>
