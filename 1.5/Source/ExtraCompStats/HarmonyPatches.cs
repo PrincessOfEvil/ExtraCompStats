@@ -27,7 +27,7 @@ namespace ExtraStats
         public static readonly float MAX_USABLE_WIND_INTENSITY;
         public static readonly string FULL_SUN_POWER;
         public const string W = " W";
-        public const string WH = " Wd";
+        public const string WH = " Wh";
         static HarmonyPatches()
             {
             //Harmony.DEBUG = true;
